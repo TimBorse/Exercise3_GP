@@ -97,7 +97,7 @@ public class SimulationGui extends JFrame {
             recombinationType.addItem(type);
         for (Protection protection : protectionsArr)
             protections.addItem(protection);
-        File folder = new File("cities/");
+        File folder = new File("values/");
         ArrayList<String> citiesFiles = listFilesForFolder(folder);
         for(String cityFile : citiesFiles){
             citiesComboBox.addItem(cityFile);

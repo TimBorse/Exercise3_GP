@@ -10,7 +10,7 @@ public class Run {
     public static SimulationGui window;
     public static void main(String[] args) {
         try {
-            GeneSet gs = new GeneSet("05-map-10x10-36border.txt" ,10, 200, 1000, 36, 50, ReplicationScheme.NONE, RecombinationType.GREEDY_CROSSOVER, Protection.NONE);
+            //GeneSet gs = new GeneSet("05-map-10x10-36border.txt" ,10, 200, 1000, 36, 50, ReplicationScheme.NONE, RecombinationType.GREEDY_CROSSOVER, Protection.NONE);
             //gs.runSimulation(0.9,0.05);
             long start = System.currentTimeMillis();
             window = new SimulationGui("Simulation");

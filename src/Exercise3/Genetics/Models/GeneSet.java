@@ -58,7 +58,7 @@ public class GeneSet {
 
     private void generateDistanceMap() throws FileNotFoundException {
         citiesMap = new int[mapSize][mapSize];
-        File cityFile = new File("cities/" + mapFileName);
+        File cityFile = new File("values/" + mapFileName);
         Scanner reader = new Scanner(cityFile);
         for(int i=0;i<mapSize;i++){
             String cities = reader.nextLine();
