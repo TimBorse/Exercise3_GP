@@ -1,11 +1,15 @@
 package Exercise3.Genetics.Models;
 
+import Exercise3.Genetics.Enums.ConstOperations;
+import Exercise3.Genetics.Enums.Operations;
+import Exercise3.Genetics.Enums.Protection;
+
 import java.util.ArrayList;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Gene implements Comparable<Gene> {
 
-    private int[] data;
+    private String data;
 
     //Gets updated when the data changes
     private double fitness;
@@ -13,40 +17,78 @@ public class Gene implements Comparable<Gene> {
     /**
      * Standard Constructor for Genes
      */
-    public Gene(int cityCount) {
-        data = new int[cityCount];
-        ArrayList<Integer> remainingCities = new ArrayList<>();
-        for(int i=1; i<=cityCount; i++){
-            remainingCities.add(i);
-        }
-        //Sets values of data-array with the probability of the parameter initrate
-        for (int i = 0; i < cityCount; i++) {
-            int randomIndex = ThreadLocalRandom.current().nextInt(remainingCities.size());
-            data[i] = remainingCities.get(randomIndex);
-            remainingCities.remove(randomIndex);
+    public Gene(int geneLength) {
+        data = "";
+        StringBuilder sb = new StringBuilder();
+        ConstOperations[] constOperations = ConstOperations.class.getEnumConstants();
+        Operations[] operations = Operations.class.getEnumConstants();
+
+        int rdm = ThreadLocalRandom.current().nextInt(geneLength / 2);
+        for (int i = 1; i <= rdm; i++) {
+            if (i == rdm) {
+                //ToDo: Wertebereich bestimmen
+                sb.append(ThreadLocalRandom.current().nextInt(100));
+                data += ThreadLocalRandom.current().nextInt(100);
+
+            } else {
+                Operations operation = operations[ThreadLocalRandom.current().nextInt(operations.length)];
+                int randomNumber = ThreadLocalRandom.current().nextInt(2);
+                if (operation != Operations.LN && operation != Operations.COS && operation != Operations.SIN && operation != Operations.DIVIDE) {
+                    sb.append(ThreadLocalRandom.current().nextInt(100))
+                    .append(" ");
+                }
+                if (operation == Operations.DIVIDE && randomNumber != 0) {
+                    sb.append("x ")
+                            .append(Operations.EXP)
+                            .append(" ")
+                            .append(i)
+                            .append(" ")
+                            .append(operation)
+                            .append(" ")
+                            .append(ThreadLocalRandom.current().nextInt(100))
+                            .append(" ");
+                } else if (operation == Operations.DIVIDE){
+                    sb.append(ThreadLocalRandom.current().nextInt(100))
+                            .append(" ")
+                            .append(operation)
+                            .append(" ")
+                            .append("x ")
+                            .append(Operations.EXP)
+                            .append(" ")
+                            .append(i)
+                            .append(" ");
+                }else{
+                    sb.append(operation)
+                            .append(" ")
+                            .append("x ")
+                            .append(Operations.EXP)
+                            .append(" ")
+                            .append(i)
+                            .append(" ");
+                }
+                sb.append(constOperations[ThreadLocalRandom.current().nextInt(constOperations.length)])
+                        .append(" ");
+
+                data = sb.toString();
+
+
+            }
+
         }
         calculateFitness();
     }
 
-    public Gene(int[] data){
+    public Gene(String data) {
         this.data = data;
         calculateFitness();
     }
 
     /**
-     *  Constructor to clone a Gene
+     * Constructor to clone a Gene
      */
-    private Gene(int[] data, double fitness) {
-        this.data = new int[data.length];
+    private Gene(String data, double fitness) {
+        this.data = data;
         this.fitness = fitness;
-        initializeCopyData(data);
-    }
-
-    /**
-     * Copies the array data and sets it to this gene object as data
-     */
-    private void initializeCopyData(int[] data) {
-        System.arraycopy(data, 0, this.data, 0, data.length);
     }
 
     /**
@@ -57,11 +99,11 @@ public class Gene implements Comparable<Gene> {
     }
 
     /**
-     *  Sets the value of the gene data at the given position to the given value
-     *  (-1 means to invert the current value)
+     * Sets the value of the gene data at the given position to the given value
+     * (-1 means to invert the current value)
      */
     public void setPos(int pos, int value) {
-        data[pos] = value;
+        // data[pos] = value;
         calculateFitness();
     }
 
@@ -78,28 +120,68 @@ public class Gene implements Comparable<Gene> {
      * Recalculates the current fitness value
      */
     public void calculateFitness() {
-        double fitness = 0d;
-        for(int i = 0; i< data.length-1; i++){
-            // -1 because index starts at 0 and not at 1
-            int from = data[i]-1;
-            int to = data[i+1]-1;
-            fitness += GeneSet.distanceMap[from][to];
+        fitness = 0;
+        double[] intermediateResults = new double[GeneSet.functionValuesArr.length];
+        String[] functionParts = this.data.split("(ADD | SUBTRACT)");
+        for (String functionPart : functionParts) {
+            for (double[] value : GeneSet.functionValuesArr) {
+
+            }
         }
-        fitness += GeneSet.distanceMap[data[data.length-1]-1][data[0]-1];
-        setFitness(fitness);
+
     }
 
-    public int[] getData() {
+    private double calculatePart(String functionPart, double x) throws HoustonWeGotAProblemException {
+        String[] parts = functionPart.split(" ");
+        double result = 0;
+            switch (parts[0]){
+                case "SIN":
+                    result = Math.sin(Math.pow(x, Double.parseDouble(parts[3])));
+                    break;
+                case "COS":
+                    result = Math.cos(Math.pow(x, Double.parseDouble(parts[3])));
+                    break;
+                case "LN":
+                    result = Math.log(Math.pow(x, Double.parseDouble(parts[3])));
+                    break;
+                case "x":
+                    result = Math.pow(x, Double.parseDouble(parts[2])) / Double.parseDouble(parts[4]);
+                    break;
+                default:
+                    switch (parts[1]){
+                        case "MULTIPLY":
+                            result = Double.parseDouble(parts[0]) * Math.pow(x, Double.parseDouble(parts[4]));
+                            break;
+                        case "DIVIDE":
+                            result = Double.parseDouble(parts[0]) / Math.pow(x, Double.parseDouble(parts[4]));
+                            break;
+                        case "EXP":
+                            result = Math.pow(Double.parseDouble(parts[0]), Math.pow(x, Double.parseDouble(parts[4])));
+                            break;
+                        case "LOG":
+                            result = Math.log10(Math.pow(x, Double.parseDouble(parts[4])))/Math.log10(Double.parseDouble(parts[0]));
+                            break;
+                        default:
+                            throw new HoustonWeGotAProblemException();
+
+                    }
+                    break;
+
+            }
+            return result;
+    }
+
+    public String getData() {
         return data;
     }
 
-    public void setData(int[] data) {
+    public void setData(String data) {
         this.data = data;
         calculateFitness();
     }
 
     /**
-     *  Comparator for gene
+     * Comparator for gene
      */
     @Override
     public int compareTo(Gene gene) {

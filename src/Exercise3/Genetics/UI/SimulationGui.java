@@ -153,7 +153,7 @@ public class SimulationGui extends JFrame {
                     }
                 };
                 worker.execute();
-            } catch (FileNotFoundException fileNotFoundException) {
+            } catch (Exception fileNotFoundException) {
                 fileNotFoundException.printStackTrace();
             }
         });

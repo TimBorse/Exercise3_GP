@@ -6,15 +6,12 @@ import Exercise3.Genetics.Enums.ReplicationScheme;
 import Exercise3.Genetics.Threads.RunGenerationsThread;
 import Exercise3.Run;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Scanner;
 
 public class GeneSet {
 
@@ -24,7 +21,7 @@ public class GeneSet {
     private double[] result;
     private int mapSize;
     private int cityCount;
-    private int[][] citiesMap;
+    public static double[][] functionValuesArr;
     public static double[][] distanceMap;
     private final int genecnt;
     private final int maxgenerations;
@@ -35,12 +32,12 @@ public class GeneSet {
     private final ReplicationScheme replicationScheme;
     private final RecombinationType crossingOverMethod;
     private final Protection protection;
-    private final String mapFileName;
+    private final String functionFileName;
     private int[] path;
     public static Gene bestGene;
 
-    public GeneSet(String mapFileName,int mapSize, int genecnt, int maxgenerations, double acceptedFitness, int numberOfRuns, ReplicationScheme replicationScheme, RecombinationType crossingOverMethod, Protection protection) throws FileNotFoundException {
-        this.mapFileName = mapFileName;
+    public GeneSet(String mapFileName,int mapSize, int genecnt, int maxgenerations, double acceptedFitness, int numberOfRuns, ReplicationScheme replicationScheme, RecombinationType crossingOverMethod, Protection protection) throws IOException {
+        this.functionFileName = mapFileName;
         this.genecnt = genecnt;
         this.maxgenerations = maxgenerations;
         this.acceptedFitness = acceptedFitness;
@@ -49,56 +46,31 @@ public class GeneSet {
         this.crossingOverMethod = crossingOverMethod;
         this.protection = protection;
         this.mapSize = mapSize;
-        generateDistanceMap();
+        generateFunctionValues();
+    }
+
+    private void generateFunctionValues() throws IOException {
+        ArrayList<double[]> functionValues = new ArrayList<>();
+        File valuesFile = new File("values/" + functionFileName);
+        BufferedReader reader = new BufferedReader(new FileReader(valuesFile));
+        String readLine;
+        while((readLine = reader.readLine()) != null){
+            functionValues.add(Arrays.stream(readLine.replaceAll(",", ".").trim().split("\\s+")).mapToDouble(Double::parseDouble).toArray());
+        }
+        reader.close();
+        functionValuesArr = new double[functionValues.size()][2];
+
+        for (int i = 0; i < functionValuesArr.length; i++){
+            System.arraycopy(functionValues.get(i), 0, functionValuesArr[i], 0, 2);
+        }
     }
 
     public double[] getResult(){
         return this.result;
     }
 
-    private void generateDistanceMap() throws FileNotFoundException {
-        citiesMap = new int[mapSize][mapSize];
-        File cityFile = new File("values/" + mapFileName);
-        Scanner reader = new Scanner(cityFile);
-        for(int i=0;i<mapSize;i++){
-            String cities = reader.nextLine();
-            if(cities.charAt(0) == ' ')
-                cities = cities.replaceFirst("\\s+", "");
-            String[] citiesInLine = cities.split("\\s+");
-            for(int j = 0; j<citiesInLine.length; j++){
-                if(!citiesInLine[j].equals("0") && !citiesInLine[j].equals("00"))
-                    cityCount++;
-                citiesMap[i][j] = Integer.parseInt(citiesInLine[j]);
-            }
-        }
-        distanceMap = new double[cityCount][cityCount];
-        for(int y = 0; y < cityCount; y++){
-            for(int x = 0; x < cityCount; x++){
-                int[] coordinatesA = searchIndices(x+1);
-                int[] coordinatesB = searchIndices(y+1);
-                int xA = coordinatesA[0];
-                int yA = coordinatesA[1];
-                int xB = coordinatesB[0];
-                int yB = coordinatesB[1];
-                double xDif = Math.abs(xA-xB);
-                double yDif = Math.abs(yA-yB);
-                double dist = Math.sqrt(xDif*xDif+yDif*yDif);
-                distanceMap[y][x] = dist;
-            }
-        }
-    }
 
-    private int[] searchIndices(int city){
-        for(int y = 0; y < mapSize; y++){
-            for(int x = 0; x < mapSize; x++){
-                if(citiesMap[y][x] == city){
-                   int[] coordinates = {x,y};
-                   return coordinates;
-                }
-            }
-        }
-        return null;
-    }
+
 
     //Tests all Parameters of the given range and writes it to a results file
     public void findIdealParameters(double pcStart, double pcEnd, double pcStep, double pmStart, double pmEnd, double pmStep) throws IOException, InterruptedException {
@@ -166,7 +138,6 @@ public class GeneSet {
                 sum += thread.getGenerationCount();
                 if (maxValue < thread.getBestFitness()){
                     maxValue = thread.getBestFitness();
-                    path = bestGene.getData();
                 }
 
             }
