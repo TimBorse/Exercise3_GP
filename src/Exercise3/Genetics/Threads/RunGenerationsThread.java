@@ -54,7 +54,11 @@ public class RunGenerationsThread extends Thread {
         bestFitness = Double.MAX_VALUE;
         //Initializes new genes
         for (int j = 0; j < genecnt; j++) {
-            genes[j] = new Gene(10);
+            try {
+                genes[j] = new Gene(10);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         //Standard procedure of the simulation
