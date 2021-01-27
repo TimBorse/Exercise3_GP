@@ -79,10 +79,10 @@ public class RunGenerationsThread extends Thread {
             if (genesReachedDesiredFitness(genes)) {
                 break;
             }
-            crossOver(selectedGenes, pc);
-            if (genesReachedDesiredFitness(genes)) {
-                break;
-            }
+            //crossOver(selectedGenes, pc);
+            //if (genesReachedDesiredFitness(genes)) {
+           //     break;
+          //  }
             replicateGenes(genes);
             generationCount++;
             if (generationCount >= maxgenerations)
@@ -140,6 +140,15 @@ public class RunGenerationsThread extends Thread {
     private void replicateGenes(Gene[] genes) {
         Arrays.sort(genes);
         switch (replicationScheme) {
+            case DOUBLE_BEST_QUARTER:
+                for (int i = 0; i < genecnt; i++) {
+                    if (i < (genecnt / 4)) {
+                        genes[genecnt-1-i] = genes[i].clone();
+                    }else{
+                        genes[genecnt-1-i] = genes[ThreadLocalRandom.current().nextInt(genecnt)].clone();
+                    }
+                }
+                break;
             case DOUBLE_BEST_TWO:
                 Gene bestGene = genes[0];
                 Gene secondBestGene = genes[1];
@@ -163,8 +172,6 @@ public class RunGenerationsThread extends Thread {
                     }
                 }
                 break;
-            case NONE:
-                break;
             default:
                 throw new IllegalArgumentException();
         }
@@ -172,10 +179,9 @@ public class RunGenerationsThread extends Thread {
 
 
     private void mutateGenes(Gene[] genes, double pm) {
-        for (int i = 0; i < (genecnt * cityCount * pm); i++) {
+        for (int i = 0; i < (genecnt * pm); i++) {
             int geneIndex = ThreadLocalRandom.current().nextInt(0, genes.length);
-            int pos1 = ThreadLocalRandom.current().nextInt(0, cityCount);
-            int pos2 = ThreadLocalRandom.current().nextInt(0, cityCount);
+            genes[geneIndex].mutate();
         }
     }
 

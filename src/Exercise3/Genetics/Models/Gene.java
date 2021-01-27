@@ -138,19 +138,19 @@ public class Gene implements Comparable<Gene> {
         for (String functionPart : functionParts) {
             int counter = 0;
             for (double[] value : GeneSet.functionValuesArr) {
-                if(functionPartCounter == 0){
+                if (functionPartCounter == 0) {
                     intermediateResults[counter] += calculatePart(functionPart, value[0]);
-                }else{
-                    if(functionPartCounter < functionParts.length && functionParts.length > 1){
-                        if (simpleOperations.get(functionPartCounter-1).equals("ADD"))
+                } else {
+                    if (functionPartCounter < functionParts.length && functionParts.length > 1) {
+                        if (simpleOperations.get(functionPartCounter - 1).equals("ADD"))
                             intermediateResults[counter] += calculatePart(functionPart, value[0]);
                         else {
                             intermediateResults[counter] -= calculatePart(functionPart, value[0]);
                         }
                     }
                 }
-                if(functionPartCounter == functionParts.length-1){
-                   variance += Math.abs(intermediateResults[counter] - GeneSet.functionValuesArr[counter][1]);
+                if (functionPartCounter == functionParts.length - 1) {
+                    variance += Math.abs(intermediateResults[counter] - GeneSet.functionValuesArr[counter][1]);
                 }
 
                 counter++;
@@ -160,6 +160,61 @@ public class Gene implements Comparable<Gene> {
 
         this.fitness = variance / GeneSet.functionValuesArr.length;
 
+    }
+
+    public void mutate() {
+        String[] tempParts = data.split("[\\s]*x EXP [\\d][\\s]*");
+        ArrayList<String> parts = new ArrayList<>();
+        for (String part : tempParts) {
+            parts.addAll(Arrays.asList(part.split(" ")));
+        }
+        int rdm = ThreadLocalRandom.current().nextInt(parts.size());
+        String part = parts.get(rdm);
+        Operations[] operations = Operations.class.getEnumConstants();
+        Operations operation = operations[ThreadLocalRandom.current().nextInt(operations.length)];
+        switch (part) {
+            case "ADD":
+                parts.set(rdm, "SUBTRACT");
+                break;
+            case "SUBTRACT":
+                parts.set(rdm, "ADD");
+                break;
+            case "DIVIDE":
+                if (parts.get(rdm - 1).matches("\\d+")) {
+                    parts.set(rdm, operation.toString());
+                    if (operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN)) {
+                        parts.remove(rdm - 1);
+                    }
+                } else {
+                    parts.set(rdm, parts.get(rdm + 1));
+                    parts.set(rdm + 1, operation.toString());
+                    if (operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN)) {
+                        parts.remove(rdm - 1);
+                    }
+                }
+                break;
+            default:
+                if (part.matches("\\d+")){
+                    parts.set(rdm, "" + ThreadLocalRandom.current().nextInt(100));
+                }else{
+                    if (part.equals("LN") || part.equals("COS") || part.equals("SIN")){
+                        parts.set(rdm, operation.toString());
+                        if (!(operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN))){
+                            parts.add(rdm, ""+ ThreadLocalRandom.current().nextInt(100));
+                        }
+                    }else{
+                        parts.set(rdm, operation.toString());
+                        if (operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN)) {
+                            parts.remove(rdm-1);
+                        }
+                    }
+                }
+                break;
+        }
+        for (String s : parts) {
+            //ToDo: neue Data erstellen aus parts
+        }
+        System.out.println();
     }
 
     private double calculatePart(String functionPart, double x) throws Exception {
@@ -219,6 +274,7 @@ public class Gene implements Comparable<Gene> {
         }
 
     }
+
 
     /**
      * Comparator for gene

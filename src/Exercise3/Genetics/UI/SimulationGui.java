@@ -119,7 +119,7 @@ public class SimulationGui extends JFrame {
                 long endTime = System.currentTimeMillis();
                 progressBar.setString("Complete");
                 progressBar.setValue(100);
-                double[] result = gs.getResult();
+                Object[] result = gs.getResult();
                 resultLabel1.setText("Result:");
                 resultLabel2.setText("Average Generations: " + result[0]);
                 resultLabel3.setText("Highest Value: " + result[1]);

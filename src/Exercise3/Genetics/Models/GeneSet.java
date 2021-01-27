@@ -18,7 +18,7 @@ public class GeneSet {
     public static int progress = 0;
 
     private ArrayList<ParameterValue> parameterValues;
-    private double[] result;
+    private Object[] result;
     private int mapSize;
     private int cityCount;
     public static double[][] functionValuesArr;
@@ -65,7 +65,7 @@ public class GeneSet {
         }
     }
 
-    public double[] getResult(){
+    public Object[] getResult(){
         return this.result;
     }
 
@@ -106,7 +106,7 @@ public class GeneSet {
 
     //Runs Simulation for given pc and pm and writes it to result file
     private void writeFile(FileWriter fileWriter, double pc, double pm) throws InterruptedException, FileNotFoundException {
-        double[] result = runGeneration();
+        Object[] result = runGeneration();
         int avgRuns = (int)result[0];
         parameterValues.add(new ParameterValue(pc, pm, avgRuns));
         try {
@@ -120,7 +120,7 @@ public class GeneSet {
         }
     }
 
-    private double[] runGeneration() throws InterruptedException, FileNotFoundException {
+    private Object[] runGeneration() throws InterruptedException, FileNotFoundException {
         RunGenerationsThread[] threads = new RunGenerationsThread[numberOfRuns];
         int sum = 0;
         double maxValue = 0;
@@ -143,7 +143,7 @@ public class GeneSet {
             }
 
         }
-        return new double[]{(sum / this.numberOfRuns), bestGene.getFitness()};
+        return new Object[]{(sum / this.numberOfRuns), bestGene.getFitness(), bestGene.getData()};
     }
 
     //Runs simulation for given pc and pm
@@ -153,9 +153,8 @@ public class GeneSet {
         this.result = runGeneration();
         System.out.println("Average Number of Generations: "+ (int)result[0]);
         System.out.println("Best Fitness: " + result[1]);
-        for(int value : path){
-            System.out.print(value + " ");
-        }
+        System.out.println("Found function: " + result[2]);
+
     }
 
     //Gets the best found parameter combination
