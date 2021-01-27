@@ -122,6 +122,7 @@ public class Gene implements Comparable<Gene> {
      * Recalculates the current fitness value
      */
     public void calculateFitness() throws Exception {
+        double variance = 0;
         fitness = 0;
         double[] intermediateResults = new double[GeneSet.functionValuesArr.length];
         String[] functionParts = this.data.split("(\\sADD\\s|\\sSUBTRACT\\s)");
@@ -148,13 +149,17 @@ public class Gene implements Comparable<Gene> {
                         }
                     }
                 }
+                if(functionPartCounter == functionParts.length-1){
+                   variance += Math.abs(intermediateResults[counter] - GeneSet.functionValuesArr[counter][1]);
+                }
 
                 counter++;
             }
             functionPartCounter++;
         }
-        //ToDo: Abweichung von Realwert => Fitness
-        System.out.println();
+
+        this.fitness = variance / GeneSet.functionValuesArr.length;
+
     }
 
     private double calculatePart(String functionPart, double x) throws Exception {
