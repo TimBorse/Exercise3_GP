@@ -19,10 +19,7 @@ public class GeneSet {
 
     private ArrayList<ParameterValue> parameterValues;
     private Object[] result;
-    private int mapSize;
-    private int cityCount;
     public static double[][] functionValuesArr;
-    public static double[][] distanceMap;
     private final int genecnt;
     private final int maxgenerations;
     private double pc;
@@ -33,7 +30,6 @@ public class GeneSet {
     private final RecombinationType crossingOverMethod;
     private final Protection protection;
     private final String functionFileName;
-    private int[] path;
     public static Gene bestGene;
 
     public GeneSet(String mapFileName,int mapSize, int genecnt, int maxgenerations, double acceptedFitness, int numberOfRuns, ReplicationScheme replicationScheme, RecombinationType crossingOverMethod, Protection protection) throws IOException {

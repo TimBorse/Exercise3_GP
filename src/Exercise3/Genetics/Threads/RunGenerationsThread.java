@@ -1,14 +1,15 @@
 package Exercise3.Genetics.Threads;
 
-import Exercise3.Genetics.Enums.Protection;
-import Exercise3.Genetics.Enums.RecombinationType;
-import Exercise3.Genetics.Enums.ReplicationScheme;
+import Exercise3.Genetics.Enums.*;
 import Exercise3.Genetics.Models.Gene;
 import Exercise3.Genetics.Models.GeneSet;
+import javafx.scene.chart.AreaChart;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class RunGenerationsThread extends Thread {
 
@@ -79,10 +80,6 @@ public class RunGenerationsThread extends Thread {
             if (genesReachedDesiredFitness(genes)) {
                 break;
             }
-            //crossOver(selectedGenes, pc);
-            //if (genesReachedDesiredFitness(genes)) {
-           //     break;
-          //  }
             replicateGenes(genes);
             generationCount++;
             if (generationCount >= maxgenerations)
@@ -100,42 +97,6 @@ public class RunGenerationsThread extends Thread {
 
     }
 
-    private void initializeCities() {
-        cities = new ArrayList<>();
-        for (int k = 1; k <= cityCount; k++) {
-            cities.add(k);
-        }
-    }
-
-    private ArrayList<Integer> getCitiesList() {
-        return (ArrayList<Integer>) cities.clone();
-    }
-
-    private void crossOver(Gene[] genes, double pc) {
-
-    }
-
-    private int findClosestRemaining(ArrayList<Integer> unusedCities, int value) {
-        int bestValue = 0;
-        for (int currentValue : unusedCities) {
-            if (bestValue == 0 || GeneSet.distanceMap[bestValue - 1][value - 1] > GeneSet.distanceMap[currentValue - 1][value - 1])
-                bestValue = currentValue;
-        }
-        return bestValue;
-    }
-
-    private void setNewData(int[] newData, int index, int value, ArrayList<Integer> unusedCities) {
-        newData[index] = value;
-        unusedCities.remove((Integer) value);
-    }
-
-    private int getIndexOf(int[] data, int value) {
-        for (int i = 0; i < data.length; i++) {
-            if (data[i] == value)
-                return i;
-        }
-        return -1;
-    }
 
     private void replicateGenes(Gene[] genes) {
         Arrays.sort(genes);
@@ -143,9 +104,9 @@ public class RunGenerationsThread extends Thread {
             case DOUBLE_BEST_QUARTER:
                 for (int i = 0; i < genecnt; i++) {
                     if (i < (genecnt / 4)) {
-                        genes[genecnt-1-i] = genes[i].clone();
-                    }else{
-                        genes[genecnt-1-i] = genes[ThreadLocalRandom.current().nextInt(genecnt)].clone();
+                        genes[genecnt - 1 - i] = genes[i].clone();
+                    } else {
+                        genes[genecnt - 1 - i] = genes[ThreadLocalRandom.current().nextInt(genecnt)].clone();
                     }
                 }
                 break;
@@ -164,13 +125,6 @@ public class RunGenerationsThread extends Thread {
                     }
                 }
                 System.arraycopy(newGenes, 0, genes, 0, genecnt);
-                break;
-            case DOUBLE_BEST_HALF:
-                for (int i = 0; i < genecnt; i++) {
-                    if (i < (genecnt / 2)) {
-                        genes[(genecnt / 2) + i] = genes[i].clone();
-                    }
-                }
                 break;
             default:
                 throw new IllegalArgumentException();

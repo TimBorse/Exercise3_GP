@@ -31,12 +31,16 @@ public class Gene implements Comparable<Gene> {
         int rdm = ThreadLocalRandom.current().nextInt(1, geneLength / 2);
         for (int i = 1; i <= rdm; i++) {
             if (i == rdm) {
-                //ToDo: Wertebereich bestimmen
                 sb.append(ThreadLocalRandom.current().nextInt(100));
                 data += ThreadLocalRandom.current().nextInt(100);
 
             } else {
-                Operations operation = operations[ThreadLocalRandom.current().nextInt(operations.length)];
+                Operations operation;
+                if(ThreadLocalRandom.current().nextInt(10)<9){
+                    operation = Operations.MULTIPLY;
+                }else{
+                    operation = operations[ThreadLocalRandom.current().nextInt(operations.length)];
+                }
                 int randomNumber = ThreadLocalRandom.current().nextInt(2);
                 if (operation != Operations.LN && operation != Operations.COS && operation != Operations.SIN && operation != Operations.DIVIDE) {
                     sb.append(ThreadLocalRandom.current().nextInt(100))
@@ -114,9 +118,6 @@ public class Gene implements Comparable<Gene> {
         return fitness;
     }
 
-    public void setFitness(double fitness) {
-        this.fitness = fitness;
-    }
 
     /**
      * Recalculates the current fitness value
@@ -129,9 +130,7 @@ public class Gene implements Comparable<Gene> {
         ArrayList<String> simpleOperations = new ArrayList<>();
         Pattern pattern = Pattern.compile("(ADD | SUBTRACT)");
         Matcher matcher = pattern.matcher(this.data);
-        int count = 0;
         while (matcher.find()) {
-            count++;
             simpleOperations.add(matcher.group().trim());
         }
         int functionPartCounter = 0;
@@ -164,10 +163,19 @@ public class Gene implements Comparable<Gene> {
 
     public void mutate() {
         String[] tempParts = data.split("[\\s]*x EXP [\\d][\\s]*");
+        ArrayList<String> exponents = new ArrayList<>();
+        Pattern pattern = Pattern.compile("(x EXP [\\d]+)");
+        Matcher matcher = pattern.matcher(this.data);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+            exponents.add(matcher.group().trim());
+        }
         ArrayList<String> parts = new ArrayList<>();
         for (String part : tempParts) {
-            parts.addAll(Arrays.asList(part.split(" ")));
+            parts.addAll(Arrays.asList(part.split("\\s+")));
         }
+        parts.remove("");
         int rdm = ThreadLocalRandom.current().nextInt(parts.size());
         String part = parts.get(rdm);
         Operations[] operations = Operations.class.getEnumConstants();
@@ -180,7 +188,7 @@ public class Gene implements Comparable<Gene> {
                 parts.set(rdm, "ADD");
                 break;
             case "DIVIDE":
-                if (parts.get(rdm - 1).matches("\\d+")) {
+                if (rdm > 0 && parts.get(rdm - 1).matches("\\d+")) {
                     parts.set(rdm, operation.toString());
                     if (operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN)) {
                         parts.remove(rdm - 1);
@@ -189,32 +197,43 @@ public class Gene implements Comparable<Gene> {
                     parts.set(rdm, parts.get(rdm + 1));
                     parts.set(rdm + 1, operation.toString());
                     if (operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN)) {
-                        parts.remove(rdm - 1);
+                        parts.remove(rdm);
                     }
                 }
                 break;
             default:
-                if (part.matches("\\d+")){
+                if (part.matches("\\d+")) {
                     parts.set(rdm, "" + ThreadLocalRandom.current().nextInt(100));
-                }else{
-                    if (part.equals("LN") || part.equals("COS") || part.equals("SIN")){
+                } else {
+                    if (part.equals("LN") || part.equals("COS") || part.equals("SIN")) {
                         parts.set(rdm, operation.toString());
-                        if (!(operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN))){
-                            parts.add(rdm, ""+ ThreadLocalRandom.current().nextInt(100));
+                        if (!(operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN))) {
+                            parts.add(rdm, "" + ThreadLocalRandom.current().nextInt(100));
                         }
-                    }else{
+                    } else {
                         parts.set(rdm, operation.toString());
                         if (operation.equals(Operations.LN) || operation.equals(Operations.COS) || operation.equals(Operations.SIN)) {
-                            parts.remove(rdm-1);
+                            parts.remove(rdm - 1);
                         }
                     }
                 }
                 break;
         }
-        for (String s : parts) {
-            //ToDo: neue Data erstellen aus parts
+        this.data = "";
+        StringBuilder sb = new StringBuilder();
+        int expCounter = 0;
+        for (int i = 0; i < parts.size(); i++) {
+            if ((parts.get(i).equals("ADD") && !parts.get(i - 1).matches("\\d+"))
+                    || (parts.get(i).equals("SUBTRACT") && !parts.get(i - 1).matches("\\d+"))
+                    || (parts.get(i).equals("DIVIDE") && i < parts.size() - 1 && parts.get(i + 1).matches("\\d+"))) {
+
+                sb.append(exponents.get(expCounter)).append(" ").append(parts.get(i)).append(" ");
+                expCounter++;
+            } else {
+                sb.append(parts.get(i)).append(" ");
+            }
         }
-        System.out.println();
+        this.data = sb.toString().trim();
     }
 
     private double calculatePart(String functionPart, double x) throws Exception {
@@ -255,24 +274,19 @@ public class Gene implements Comparable<Gene> {
                     break;
 
             }
-        } else {
-            result = Double.parseDouble(parts[0]);
+        } else if(!parts[0].equals("")){
+            try{
+                result = Double.parseDouble(parts[0]);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+
         }
         return result;
     }
 
     public String getData() {
         return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-        try {
-            calculateFitness();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
 
